@@ -1,0 +1,86 @@
+clc
+clear all
+close all
+%% 
+
+
+[fn pn] = uigetfile({'*.jpg';'*.bmp';'*.tif';'*.gif';'*.png'},'Select Image File');
+complete = strcat(pn,fn);
+pic1=(imread (complete));
+figure,imshow(pic1);
+title('Input Image');
+load Decision;
+c1=0;c2=0;c3=0;c4=0;c5=0;c6=0;
+det=[];
+ d1=WavData1(complete);
+    d1=mean(d1);
+    yfit=treeval(T,d1);
+    
+    
+     tc = fitctree(Train,class)
+
+% % view(tc)
+view(tc,'mode','graph')
+    numObs = length(class);
+p = randperm(numObs);
+meas = Train(p,:)
+class1 = class(p)
+
+BaggedEnsemble = TreeBagger(numObs,Train,class,'OOBPred','On')
+figure,plot(oobError(BaggedEnsemble))
+xlabel('Number of grown trees')
+ylabel('Out-of-bag classification error')
+
+x = Train;
+j=size(Train);
+% Iris data, 2 classes and 2 features
+y = (1:j(1))'>50;
+% Versicolor = 0, virginica = 1
+b = glmfit(x,y,'binomial');
+% Logistic regression
+p = glmval(b,x,'logit');
+[X1,Y1,T,AUC] = perfcurve(class,p,'b');
+
+Model = fitctree(Train,class, ...
+'ClassNames',{'a','b'});
+[~,score] = resubPredict(Model);
+
+diffscore = score(:,2) - max(score(:,1));
+[X,Y,U,V,OPTROCPT,suby,subnames] = perfcurve(class,diffscore,'b');
+
+
+figure,plot(X,Y)
+hold on
+plot(OPTROCPT(1),OPTROCPT(2),'ro')
+xlabel('False positive rate (or) Specificity') 
+ylabel('True positive rate (or) Sensitivity')
+title('ROC Curve for Classification by Classification Trees')
+hold off
+     %pause(1);
+     
+     if(yfit==1)
+     disp('HUMAN');msgbox('HUMAN');
+        c1 = d1;
+        det=1
+%     pon
+%     tts('Did she have a precursor she did indeed she did in');
+    elseif(yfit==2)
+     disp('NOT HUMAN');msgbox('NOT HUMAN');
+        c2 = d1;
+        det=0
+%        
+    else
+       
+     disp('Invalid Input');msgbox('Invalid Input');
+  
+     end
+    
+     oo1=imread(complete);
+     if ndims(oo1)==3
+         oo1=imresize(rgb2gray(oo1),[200 200]);
+     else
+         oo1=imresize(oo1,[200 200]);
+     end
+     %oo2=imread('segm.jpg');
+     %[OverlapImage DiceCoef] = DiceSimilarity2DImage(oo1, oo2);
+    % [jaccardIdx,jaccardDist] = jaccard_coefficient(logical(oo1),logical(oo2));
